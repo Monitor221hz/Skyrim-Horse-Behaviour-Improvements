@@ -1,6 +1,6 @@
 #include "log.h"
-
-
+#include "hook.h"
+using namespace HorseAnimationFixes;
 void OnDataLoaded()
 {
    
@@ -10,7 +10,7 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 {
 	switch (a_msg->type) {
 	case SKSE::MessagingInterface::kDataLoaded:
-        
+        HorseRiderHook::Load();
 		break;
 	case SKSE::MessagingInterface::kPostLoad:
 		break;
@@ -32,7 +32,7 @@ SKSEPluginLoad(const SKSE::LoadInterface *skse) {
 	if (!messaging->RegisterListener("SKSE", MessageHandler)) {
 		return false;
 	}
-
+	HorseRiderHook::Install();
 	
     return true;
 }
