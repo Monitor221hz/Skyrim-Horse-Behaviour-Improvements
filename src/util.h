@@ -210,6 +210,7 @@ namespace MathUtil
         _mm_store_ps(quad, a_hkVector4.quad);
         return RE::NiPoint3{quad[0], quad[1], quad[2]};
     }
+
     struct Angle 
     {
         struct AngleZX

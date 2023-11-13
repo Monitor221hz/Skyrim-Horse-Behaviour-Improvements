@@ -1,9 +1,10 @@
 #pragma once 
 
 #include "util.h"
+#include "settings.h"
 using namespace RE;
 
-namespace HorseAnimationFixes
+namespace HorsePoseCorrection
 {
   
     
@@ -26,6 +27,7 @@ namespace HorseAnimationFixes
         static void Load()
         {
             horseKeyword = TESForm::LookupByID(0x26110)->As<BGSKeyword>();
+            deltaTime = (float*)RELOCATION_ID(523660, 410199).address();
         }
 
         static bool HasHorseKeyword(const RE::BGSKeywordForm* a_keywordForm) 
@@ -64,7 +66,16 @@ namespace HorseAnimationFixes
 
         static inline BGSKeyword* horseKeyword;
 
-        static inline float pitch = 1.0;
+        static inline float spinePitch = 0.0;
+        static inline float headPitch = 0.0;
+        static inline float spineRoll = 0.0; 
+        static inline float headRoll = 0.0; 
+
+        static inline float mountSpinePitch = 0.0; 
+        static inline float mountHeadPitch = 0.0;
+
+        static inline float* deltaTime = nullptr; 
+
 
         
     };

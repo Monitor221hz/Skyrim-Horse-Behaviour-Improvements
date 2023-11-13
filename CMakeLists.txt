@@ -3,7 +3,7 @@
 cmake_minimum_required(VERSION 3.21)
 
 # Set your project name. This will be the name of your SKSE .dll file.
-project(HorseAnimationFixes VERSION 1.0.0 LANGUAGES CXX)
+project(HorsePoseCorrection VERSION 1.0.0 LANGUAGES CXX)
 
 #
 
@@ -27,7 +27,7 @@ endif()
 # To do this automatically, set the `SKYRIM_MODS_FOLDER` environment variable
 # to the path of your "mods" folder
 if(DEFINED ENV{SKYRIM_MODS_FOLDER} AND IS_DIRECTORY "$ENV{SKYRIM_MODS_FOLDER}")
-    set(OUTPUT_FOLDER "$ENV{SKYRIM_MODS_FOLDER}/Horse Animation Fixes")
+    set(OUTPUT_FOLDER "$ENV{SKYRIM_MODS_FOLDER}/Horse Behaviour Improvements")
 endif()
 
 # Otherwise, you can set OUTPUT_FOLDER to any place you'd like :)
