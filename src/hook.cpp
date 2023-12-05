@@ -48,11 +48,22 @@ namespace HorsePoseCorrection
         NiPoint3 eyeOrig, eyeDir;
 
         a_mount->GetEyeVector(eyeOrig, eyeDir, false);
-
+        float maxSlopeCosine = 0.0f;
+        float supportDistance = 0.0f; 
+        float hardSupportDistance = 0.0f;
         auto surfaceNormal = MathUtil::GetNiPoint3(controller->surfaceInfo.surfaceNormal);
+        if (auto* rigidBodyController = skyrim_cast<RE::bhkCharRigidBodyController *>(controller))
+        {
+            auto* rigidBody = static_cast<RE::hkpCharacterRigidBody *>(rigidBodyController->rigidBody.referencedObject.get());
+            rigidBody->maxSlopeCosine = 0.700f;
+            maxSlopeCosine = rigidBody->maxSlopeCosine;
+            supportDistance = rigidBody->supportDistance; 
+            hardSupportDistance = rigidBody->hardSupportDistance;
+        }
 
         MathUtil::Angle::AngleZX angle;      
         MathUtil::Angle::GetAngle(refVector,surfaceNormal,  angle);
+
 
         float baseMult = 1.0f;
 
@@ -67,23 +78,24 @@ namespace HorsePoseCorrection
         float desiredSpinePitch = MathUtil::Angle::RadianToDegree(-angle.x)*options.spinePitchMult*baseMult;
         float desiredHeadPitch = MathUtil::Angle::RadianToDegree(-angle.x)*options.headPitchMult*baseMult;
 
-        float desiredMountSpinePitch = MathUtil::Angle::RadianToDegree(-angle.x)*moptions.spinePitchMult;
-        float desiredMountHeadPitch = MathUtil::Angle::RadianToDegree(-angle.x)*moptions.headPitchMult;
-        
+        float desiredMountSpinePitch = MathUtil::Angle::RadianToDegree(angle.x)*moptions.spinePitchMult*baseMult;
+        float desiredMountHeadPitch = MathUtil::Angle::RadianToDegree(angle.x)*moptions.headPitchMult*baseMult;
+
         desiredSpinePitch = MathUtil::Clamp(desiredSpinePitch, options.spinePitchMin, options.spinePitchMax);
         desiredHeadPitch = MathUtil::Clamp(desiredHeadPitch, options.headPitchMin, options.headPitchMax);
 
         desiredMountSpinePitch = MathUtil::Clamp(desiredMountSpinePitch, moptions.spinePitchMin, moptions.spinePitchMax);
         desiredMountHeadPitch = MathUtil::Clamp(desiredMountHeadPitch, moptions.headPitchMin, moptions.headPitchMax);
 
+        // desiredMountFemurPitch = MathUtil::Clamp(desiredMountFemurPitch, -40.0f, 40.0f);
+        // desiredMountHumerusPitch = MathUtil::Clamp(desiredMountHumerusPitch, -40.0f, 40.0f);
 
         #ifndef Debug
         if (lastAngle != angle.x && !logLock)
         {
             lastAngle = angle.x; 
             SKSE::log::info("Angle {}\nHead Pitch {}\nSpine Pitch {}\nEye {} {} {}", MathUtil::Angle::RadianToDegree(lastAngle), desiredHeadPitch, desiredSpinePitch, eyeDir.x, eyeDir.y, eyeDir.z);
-            SKSE::log::info("Velocity {} | {}", velocity.x, velocity.y);
-            SKSE::log::info("Speed {}", speed);
+            SKSE::log::info("Max Slope Cosine {} SupportDistance {} HardSupportDistance {}", maxSlopeCosine, supportDistance, hardSupportDistance);
             std::jthread lthread(LogDelayed); 
             lthread.detach();
         } 
@@ -108,14 +120,16 @@ namespace HorsePoseCorrection
 
         spinePitch = MathUtil::Interp::InterpTo(spinePitch, desiredSpinePitch, playerDeltaTime, options.interpolationSpeed); 
         headPitch = MathUtil::Interp::InterpTo(headPitch, desiredHeadPitch, playerDeltaTime, options.interpolationSpeed);
-        mountSpinePitch = MathUtil::Interp::InterpTo(mountSpinePitch, desiredMountSpinePitch, playerDeltaTime, options.interpolationSpeed);
-        mountHeadPitch = MathUtil::Interp::InterpTo(mountHeadPitch, desiredMountHeadPitch, playerDeltaTime, options.interpolationSpeed);
+        mountSpinePitch = MathUtil::Interp::InterpTo(mountSpinePitch, desiredMountSpinePitch, playerDeltaTime, moptions.interpolationSpeed);
+        mountHeadPitch = MathUtil::Interp::InterpTo(mountHeadPitch, desiredMountHeadPitch, playerDeltaTime, moptions.interpolationSpeed);
+
         
 	    a_actor->SetGraphVariableFloat("HSRD_SpinePitch", spinePitch);
         a_actor->SetGraphVariableFloat("HSRD_HeadPitch", headPitch);
 
-        a_mount->SetGraphVariableFloat("HSFX_SpinePitch", mountSpinePitch); 
-        a_mount->SetGraphVariableFloat("HSFX_HeadPitch", mountHeadPitch);
+        a_mount->SetGraphVariableFloat("HSPS_SpinePitch", mountSpinePitch); 
+        a_mount->SetGraphVariableFloat("HSPS_HeadPitch", mountHeadPitch);
+
 
 
 
